@@ -24,8 +24,9 @@ import (
 //     "legacy_".
 //     e.g. key="tfstate" => name="legacy_bi" (or any legacy_* name)
 //
-// Historic `spacelift` and `account` states are exceptions: their consumers
-// are conventionally named `spacelift_install` and `account`.
+// Historic `spacelift` and `account` states are exceptions. The `spacelift`
+// key allows `spacelift`, `spacelift_app`, and `spacelift_install` local names;
+// the `account` key allows the `account` local name.
 type TerraformRemoteStateNamingRule struct {
 	tflint.DefaultRule
 }
@@ -108,7 +109,7 @@ func (r *TerraformRemoteStateNamingRule) Check(runner tflint.Runner) error {
 				}
 			}
 		} else {
-			if (key == "spacelift" && name == "spacelift_install") ||
+			if (key == "spacelift" && (name == "spacelift" || name == "spacelift_app" || name == "spacelift_install")) ||
 				(key == "account" && name == "account") {
 				continue
 			}

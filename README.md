@@ -65,6 +65,8 @@ Enforces local-name conventions on `data "terraform_remote_state"` declarations.
 1. **Standard keys** (match `^\d+/[a-z0-9-]+$`): the local name must equal the key with the leading `\d+/` stripped and `-` replaced with `_`.
 2. **Legacy keys** (anything else): the local name must start with the prefix `legacy_`.
 
+Exceptions: `key = "spacelift"` permits local names `spacelift`, `spacelift_app`, and `spacelift_install`; `key = "account"` permits local name `account`.
+
 Keys that aren't static string literals (e.g. with `${var.x}` interpolation) are skipped.
 
 **Configuration:**

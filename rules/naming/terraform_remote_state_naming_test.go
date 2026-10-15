@@ -33,6 +33,20 @@ data "terraform_remote_state" "com_preprod_us" {
 			Expected: helper.Issues{},
 		},
 		{
+			Name: "standard spacelift key with spacelift name - no issue",
+			Content: `
+data "terraform_remote_state" "spacelift" {
+  backend = "s3"
+
+  config = {
+    bucket = "828136053937-spacelift-states-b436c8"
+    key    = "1/spacelift"
+    region = "us-east-1"
+  }
+}`,
+			Expected: helper.Issues{},
+		},
+		{
 			Name: "standard key with wrong name - issue",
 			Content: `
 data "terraform_remote_state" "preprod_us" {
@@ -100,6 +114,32 @@ data "terraform_remote_state" "legacy_bi" {
     bucket = "lucid-terraform"
     key    = "tfstate"
     region = "us-east-1"
+  }
+}`,
+			Expected: helper.Issues{},
+		},
+		{
+			Name: "spacelift legacy key with spacelift name - no issue",
+			Content: `
+data "terraform_remote_state" "spacelift" {
+  backend = "s3"
+  config = {
+    bucket = "lucid-terraform-gov"
+    key    = "spacelift"
+    region = "us-gov-west-1"
+  }
+}`,
+			Expected: helper.Issues{},
+		},
+		{
+			Name: "spacelift legacy key with spacelift_app name - no issue",
+			Content: `
+data "terraform_remote_state" "spacelift_app" {
+  backend = "s3"
+  config = {
+    bucket = "lucid-terraform-gov"
+    key    = "spacelift"
+    region = "us-gov-west-1"
   }
 }`,
 			Expected: helper.Issues{},

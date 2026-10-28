@@ -16,23 +16,24 @@ import (
 //
 // Two conventions:
 //
-//  1. Standard keys (match ^\d+/[a-z0-9-]+$): local name must equal the key
+//  1. Standard keys (match ^\d+/[a-z0-9_-]+$): local name must equal the key
 //     with the leading \d+/ stripped and `-` replaced with `_`.
 //     e.g. key="1/com-preprod-us" => name="com_preprod_us"
+//     e.g. key="1/com-active-directory-product_eng" => name="com_active_directory_product_eng"
 //
 //  2. Legacy keys (anything else): local name must start with the prefix
 //     "legacy_".
 //     e.g. key="tfstate" => name="legacy_bi" (or any legacy_* name)
 //
-// Historic `spacelift`, `account`, and `com_active_directory_product_eng` states
-// are exceptions. The `spacelift` key allows `spacelift`, `spacelift_app`, and
-// `spacelift_install` local names; the other keys allow matching local names.
+// Historic `spacelift` and `account` states are exceptions. The `spacelift`
+// key allows `spacelift`, `spacelift_app`, and `spacelift_install` local names;
+// the `account` key allows the `account` local name.
 type TerraformRemoteStateNamingRule struct {
 	tflint.DefaultRule
 }
 
 var (
-	standardKeyRe = regexp.MustCompile(`^\d+/[a-z0-9-]+$`)
+	standardKeyRe = regexp.MustCompile(`^\d+/[a-z0-9_-]+$`)
 	stripPrefixRe = regexp.MustCompile(`^\d+/`)
 )
 
@@ -93,7 +94,6 @@ func (r *TerraformRemoteStateNamingRule) Check(runner tflint.Runner) error {
 			// key not present, or not a static string (e.g. interpolation).
 			continue
 		}
-
 		if standardKeyRe.MatchString(key) {
 			expected := strings.ReplaceAll(stripPrefixRe.ReplaceAllString(key, ""), "-", "_")
 			if name != expected {
@@ -110,8 +110,7 @@ func (r *TerraformRemoteStateNamingRule) Check(runner tflint.Runner) error {
 			}
 		} else {
 			if (key == "spacelift" && (name == "spacelift" || name == "spacelift_app" || name == "spacelift_install")) ||
-				(key == "account" && name == "account") ||
-				(key == "com_active_directory_product_eng" && name == "com_active_directory_product_eng") {
+				(key == "account" && name == "account") {
 				continue
 			}
 			if !strings.HasPrefix(name, "legacy_") {

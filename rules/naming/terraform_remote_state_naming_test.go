@@ -171,7 +171,52 @@ data "terraform_remote_state" "account" {
 			Expected: helper.Issues{},
 		},
 		{
-			Name: "com_active_directory_product_eng legacy key with matching name - no issue",
+			Name: "active directory key with hyphens and underscore - no issue",
+			Content: `
+data "terraform_remote_state" "com_active_directory_product_eng" {
+  backend = "s3"
+  config = {
+    bucket = "lucid-terraform"
+    key    = "1/com-active-directory-product_eng"
+    region = "us-east-1"
+  }
+}`,
+			Expected: helper.Issues{},
+		},
+		{
+			Name: "standard key with underscores and hyphens - correct name",
+			Content: `
+data "terraform_remote_state" "example_service_prod" {
+  backend = "s3"
+  config = {
+    key = "2/example_service-prod"
+  }
+}`,
+			Expected: helper.Issues{},
+		},
+		{
+			Name: "standard key with underscores and hyphens - wrong name",
+			Content: `
+data "terraform_remote_state" "example_service" {
+  backend = "s3"
+  config = {
+    key = "2/example_service-prod"
+  }
+}`,
+			Expected: helper.Issues{
+				{
+					Rule:    &TerraformRemoteStateNamingRule{},
+					Message: `local name "example_service" does not match the standard convention for key "2/example_service-prod" (expected "example_service_prod")`,
+					Range: hcl.Range{
+						Filename: "resource.tf",
+						Start:    hcl.Pos{Line: 2, Column: 1},
+						End:      hcl.Pos{Line: 2, Column: 48},
+					},
+				},
+			},
+		},
+		{
+			Name: "bare com_active_directory_product_eng key with matching name - issue",
 			Content: `
 data "terraform_remote_state" "com_active_directory_product_eng" {
   backend = "s3"
@@ -181,7 +226,17 @@ data "terraform_remote_state" "com_active_directory_product_eng" {
     region = "us-east-1"
   }
 }`,
-			Expected: helper.Issues{},
+			Expected: helper.Issues{
+				{
+					Rule:    &TerraformRemoteStateNamingRule{},
+					Message: `local name "com_active_directory_product_eng" references legacy key "com_active_directory_product_eng" and must start with the prefix "legacy_"`,
+					Range: hcl.Range{
+						Filename: "resource.tf",
+						Start:    hcl.Pos{Line: 2, Column: 1},
+						End:      hcl.Pos{Line: 2, Column: 65},
+					},
+				},
+			},
 		},
 		{
 			Name: "com_active_directory_product_eng name with another legacy key - issue",

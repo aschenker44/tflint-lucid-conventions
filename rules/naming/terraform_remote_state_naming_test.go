@@ -171,6 +171,42 @@ data "terraform_remote_state" "account" {
 			Expected: helper.Issues{},
 		},
 		{
+			Name: "com_active_directory_product_eng legacy key with matching name - no issue",
+			Content: `
+data "terraform_remote_state" "com_active_directory_product_eng" {
+  backend = "s3"
+  config = {
+    bucket = "lucid-terraform"
+    key    = "com_active_directory_product_eng"
+    region = "us-east-1"
+  }
+}`,
+			Expected: helper.Issues{},
+		},
+		{
+			Name: "com_active_directory_product_eng name with another legacy key - issue",
+			Content: `
+data "terraform_remote_state" "com_active_directory_product_eng" {
+  backend = "s3"
+  config = {
+    bucket = "lucid-terraform"
+    key    = "tfstate"
+    region = "us-east-1"
+  }
+}`,
+			Expected: helper.Issues{
+				{
+					Rule:    &TerraformRemoteStateNamingRule{},
+					Message: `local name "com_active_directory_product_eng" references legacy key "tfstate" and must start with the prefix "legacy_"`,
+					Range: hcl.Range{
+						Filename: "resource.tf",
+						Start:    hcl.Pos{Line: 2, Column: 1},
+						End:      hcl.Pos{Line: 2, Column: 65},
+					},
+				},
+			},
+		},
+		{
 			Name: "account name with another legacy key - issue",
 			Content: `
 data "terraform_remote_state" "account" {

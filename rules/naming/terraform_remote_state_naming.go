@@ -24,9 +24,9 @@ import (
 //     "legacy_".
 //     e.g. key="tfstate" => name="legacy_bi" (or any legacy_* name)
 //
-// Historic `spacelift` and `account` states are exceptions. The `spacelift`
-// key allows `spacelift`, `spacelift_app`, and `spacelift_install` local names;
-// the `account` key allows the `account` local name.
+// Historic `spacelift`, `account`, and `com_active_directory_product_eng` states
+// are exceptions. The `spacelift` key allows `spacelift`, `spacelift_app`, and
+// `spacelift_install` local names; the other keys allow matching local names.
 type TerraformRemoteStateNamingRule struct {
 	tflint.DefaultRule
 }
@@ -110,7 +110,8 @@ func (r *TerraformRemoteStateNamingRule) Check(runner tflint.Runner) error {
 			}
 		} else {
 			if (key == "spacelift" && (name == "spacelift" || name == "spacelift_app" || name == "spacelift_install")) ||
-				(key == "account" && name == "account") {
+				(key == "account" && name == "account") ||
+				(key == "com_active_directory_product_eng" && name == "com_active_directory_product_eng") {
 				continue
 			}
 			if !strings.HasPrefix(name, "legacy_") {
